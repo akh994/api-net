@@ -3,12 +3,12 @@
   <packageSources>
     <clear />
     <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
-    <add key="BluebirdGitLab" value="https://git.bluebird.id/api/v4/projects/architect%2Fmy-skeleton%2Fskeleton-api-net/packages/nuget/index.json" />
+    <add key="SkeletonGitLab" value="https://git.bluebird.id/api/v4/projects/architect%2Fmy-skeleton%2Fskeleton-api-net/packages/nuget/index.json" />
   </packageSources>
   <packageSourceCredentials>
-    <BluebirdGitLab>
+    <SkeletonGitLab>
       <add key="Username" value="%GITLAB_USERNAME%" />
       <add key="ClearTextPassword" value="%GITLAB_TOKEN%" />
-    </BluebirdGitLab>
+    </SkeletonGitLab>
   </packageSourceCredentials>
 </configuration>

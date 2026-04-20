@@ -3096,12 +3096,12 @@ fi
 echo ""🔧 Menambahkan GitLab Package Registry ke NuGet sources...""
 
 # Remove existing source if any
-dotnet nuget remove source BluebirdGitLab 2>/dev/null || true
+dotnet nuget remove source SkeletonGitLab 2>/dev/null || true
 
 # Add source with credentials
 dotnet nuget add source \
     ""https://git.bluebird.id/api/v4/projects/architect%2Fmy-skeleton%2Fskeleton-api-net/packages/nuget/index.json"" \
-    --name BluebirdGitLab \
+    --name SkeletonGitLab \
     --username ""$GITLAB_USERNAME"" \
     --password ""$GITLAB_TOKEN"" \
     --store-password-in-clear-text
@@ -3127,12 +3127,12 @@ if (-not $env:GITLAB_USERNAME -or -not $env:GITLAB_TOKEN) {
 Write-Host ""🔧 Menambahkan GitLab Package Registry ke NuGet sources..."" -ForegroundColor Cyan
 
 # Remove existing source if any
-dotnet nuget remove source BluebirdGitLab 2>$null
+dotnet nuget remove source SkeletonGitLab 2>$null
 
 # Add source with credentials
 dotnet nuget add source `
     ""https://git.bluebird.id/api/v4/projects/architect%2Fmy-skeleton%2Fskeleton-api-net/packages/nuget/index.json"" `
-    --name BluebirdGitLab `
+    --name SkeletonGitLab `
     --username $env:GITLAB_USERNAME `
     --password $env:GITLAB_TOKEN `
     --store-password-in-clear-text

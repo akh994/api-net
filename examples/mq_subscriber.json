@@ -1,0 +1,33 @@
+{
+    "broker_type": "rabbitmq",
+    "methods": [
+        {
+            "name": "UserCreated",
+            "topic": "user.created",
+            "payload": {
+                "id": "string",
+                "username": "string",
+                "email": "string",
+                "role": "string",
+                "created_at": "string"
+            }
+        },
+        {
+            "name": "UserUpdated",
+            "topic": "user.updated",
+            "payload": {
+                "id": "string",
+                "email": "string",
+                "full_name": "string",
+                "updated_at": "string"
+            }
+        },
+        {
+            "name": "UserDeleted",
+            "topic": "user.deleted",
+            "payload": {
+                "id": "string"
+            }
+        }
+    ]
+}

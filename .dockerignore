@@ -1,0 +1,66 @@
+# Build artifacts
+bin/
+obj/
+out/
+publish/
+
+# Test results
+coverage/
+TestResults/
+*.trx
+*.coverage
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation (except README)
+*.md
+!README.md
+
+# Config (will be provided via ConfigMap)
+appsettings.Development.json
+appsettings.*.json
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*~
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/

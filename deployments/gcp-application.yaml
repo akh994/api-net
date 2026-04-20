@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: apps_name
+  labels:
+    env: branch
+    project: projectid
+    cloud: google
+spec:
+  destination:
+    namespace: namespace
+    name: clustername
+  project: projectid
+  source:
+    repoURL: git@gitssh.bluebird.id:argocd/bbdispatch.git
+    targetRevision: main
+    path: branch/service
+  syncPolicy: {}

@@ -1,0 +1,49 @@
+@startuml User Created Consumer Flow - Simplified (.NET)
+!theme plain
+title User Created Consumer Flow - Simplified View (.NET 10)
+
+queue RabbitMQ
+participant "UserCreatedConsumer\n(BackgroundService)" as consumer
+participant "UserService\n(Application)" as service
+participant "UserGrpcRepository /\nUserRestRepository" as client
+participant "SseManager\n(Infrastructure)" as sse
+participant "External\nService" as external
+database Redis
+
+RabbitMQ -> consumer: Consume "user.created"\n(with traceparent header)
+
+consumer -> consumer: Parse trace context\n(Activity.Current)
+note right
+  Links to original
+  request transaction
+  for distributed tracing
+end note
+
+consumer -> consumer: Deserialize JSON\nto UserCreatedMessage
+
+consumer -> consumer: Create DI Scope\n(IServiceProvider.CreateScope())
+
+consumer -> service: ProcessUserCreatedAsync(userId)
+
+alt Feature Flag: grpc-client = true
+    service -> client: GetUserAsync via gRPC
+    client -> external: gRPC GetById
+    external --> client: UserModel
+    client --> service: User entity
+else Feature Flag: grpc-client = false
+    service -> client: GetUserAsync via REST
+    client -> external: HTTP GET /v1/user/{id}
+    external --> client: JSON
+    client --> service: User entity
+end
+
+service -> sse: PublishToRedisAsync(SseEvent)
+sse -> Redis: PUBLISH sse:events
+Redis --> sse: OK
+sse --> service: void
+
+service --> consumer: void
+consumer -> consumer: context.Ack()
+consumer --> RabbitMQ: ACK
+
+@enduml

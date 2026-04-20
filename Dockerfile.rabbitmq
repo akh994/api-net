@@ -1,0 +1,11 @@
+FROM rabbitmq:3-management-alpine
+
+# Download and install delayed message exchange plugin
+RUN apk add --no-cache curl && \
+    curl -L https://github.com/rabbitmq/rabbitmq-delayed-message-exchange/releases/download/v3.13.0/rabbitmq_delayed_message_exchange-3.13.0.ez \
+    -o $RABBITMQ_HOME/plugins/rabbitmq_delayed_message_exchange-3.13.0.ez && \
+    rabbitmq-plugins enable rabbitmq_delayed_message_exchange && \
+    apk del curl
+
+# Expose ports
+EXPOSE 5672 15672

@@ -1,0 +1,28 @@
+{
+    "name": "Product",
+    "table_name": "products",
+    "fields": [
+        {
+            "name": "Id",
+            "type": "Guid",
+            "primary_key": true
+        },
+        {
+            "name": "Name",
+            "type": "string",
+            "nullable": false
+        },
+        {
+            "name": "Price",
+            "type": "decimal",
+            "nullable": false
+        }
+    ],
+    "methods": [
+        "Add",
+        "GetAll",
+        "GetByID",
+        "Update",
+        "Delete"
+    ]
+}

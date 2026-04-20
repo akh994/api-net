@@ -1,0 +1,817 @@
+syntax = "proto3";
+
+package orderplanning;
+
+option go_package = "OrderPlanning/proto";
+
+import public "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+
+
+service OrderPlanningGrpcService {
+  rpc HealthCheck (google.protobuf.Empty) returns (HealthCheckResp) {
+    option (google.api.http) = {
+      get: "/v1/health"
+    };
+  };
+  rpc GetMaster (google.protobuf.Empty) returns (GetMasterResponse) {
+    option (google.api.http) = {
+      get: "/v1/master"
+    };
+  };
+  rpc GetOrderDetail (GetOrderDetailRequest) returns (GetOrderDetailResponse) {
+    option (google.api.http) = {
+      get: "/v1/order/{order_id}"
+    };
+  };
+  rpc GetOrderList (GetOrderListRequest) returns (GetOrderListResponse) {
+    option (google.api.http) = {
+      post: "/v1/orders/list",
+      body: "*"
+    };
+  };
+  rpc ManualAssign (ManualAssignRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/v1/order/manual-assign",
+      body: "*"
+    };
+  };
+  rpc TransferPlanning (TransferPlanningRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/v1/order/transfer",
+      body: "*"
+    };
+  };
+
+  rpc DispatchOrderAssign (DispatchOrderAssignRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/v1/order/dispatch",
+      body: "*"
+    };
+  };  
+
+  rpc AssignedOffer (AssignedOfferRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/v1/order/assigned-offer",
+      body: "*"
+    };
+  };
+  rpc GetOrderListPlanning (GetOrderListPlanningRequest) returns (GetOrderListPlanningResponse) {
+    option (google.api.http) = {
+      post: "/v1/orders/planning",
+      body: "*"
+    };
+  };
+  rpc GetOrderDetailPlanning (GetOrderDetailPlanningRequest) returns (GetOrderDetailPlanningResponse) {
+    option (google.api.http) = {
+      get: "/v1/order/planning/{order_id}"
+    };
+  };
+  rpc DriverConfirm (DriverConfirmRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/v1/order/driver-confirm",
+      body: "*"
+    };
+  };
+  rpc SetAutoDispatch (SetAutoDispatchRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/v1/order/auto-dispatch",
+      body: "*"
+    };
+  };
+  rpc SetGage (SetGageRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/v1/order/gage",
+      body: "*"
+    };
+  };
+
+  rpc CleanUpOrder (CleanUpOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/v1/order/cleanup",
+      body: "*"
+    };
+  };
+
+  rpc EditCustomerEmail (EditCustomerEmailRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/v1/order/customer-email",
+      body: "*"
+    };
+  };
+  rpc GetBookingDetail (GetBookingDetailRequest) returns (GetBookingDetailResponse) {
+    option (google.api.http) = {
+      get: "/v1/booking/{booking_no}/{order_id}"
+    };
+  };
+  rpc GetBookingList(GetBookingListRequest) returns (GetBookingListResponse) {
+    option (google.api.http) = {
+      get: "/v1/bookings/list"
+    };
+  };
+}
+
+
+message GetBookingDetailRequest {
+  string booking_no = 1;
+  string order_id = 2;
+}
+
+message CleanUpOrderRequest {
+  repeated string driver_id = 1;
+}
+
+message SetGageRequest {
+  int64 order_id = 1;
+  bool gage = 2;
+}
+
+message SetAutoDispatchRequest {
+  int64 order_id = 1;
+  bool auto_dispatch = 2; 
+}
+
+message GetOrderDetailPlanningRequest {
+    string order_id = 1;
+}
+
+message GetOrderDetailPlanningResponse {
+    GetOrderDetailPlanningData data = 1;
+}
+
+enum OrderStatus {
+  ORDER_STATUS_UNSPECIFIED = 0;
+  ORDER_STATUS_PENDING = 1;
+  ORDER_STATUS_CONFIRMED = 2;
+  ORDER_STATUS_COMPLETED = 3;
+  ORDER_STATUS_CANCELLED = 4;
+}
+
+message GetOrderDetailPlanningData {
+    string                    id = 1 ;
+    string                    order_no = 2 ;
+    int32                     item_no = 3;
+    string                    customer_name = 4 ;
+    string                    customer_phone = 5 ;
+    string                    pickup_point = 6;
+    google.protobuf.Timestamp pickup_time = 7 ;
+    string                    drop_point = 8;
+    string                    order_type = 9;
+    string                    payment_type = 10;
+    string                    payment_method = 11;
+    string                    notes = 12 ;
+    bool                      confirmed = 13 ;  
+    string                    pickup_point_name = 14;
+    string                    pembayar_tagih = 15;
+    double                    total_tarif = 16;
+    bool                      show_info_toll = 17;
+    int32                     status_tagih_toll = 18;
+    int32                     deposit_toll = 19;
+    bool                      show_info_pickup = 20;
+    OrderStatus               order_status = 21;
+}
+  
+message AssignedOfferRequest {
+  int64 order_id = 1;
+  string order_number = 2;
+  VehicleData vehicle = 3;
+  bool is_multi_assigned = 4;
+}
+
+message GetOrderListPlanningRequest {
+  string nip = 1;
+  repeated int32 status = 2;
+}
+
+message GetOrderListPlanningData {
+  string order_id = 1;
+  string order_no = 2;
+  string customer_name = 3;
+  string customer_phone = 4;
+  string pickup_address = 5;
+  string destination_address = 6;
+  int32 status = 7;
+  int32 order_type_id = 8;
+  string order_type = 9;
+  string remark = 10;
+  string pickup_time = 11;
+  string partner_ref_id = 12;
+  string base_package_name = 13;
+}
+
+message GetOrderListPlanningResponse {
+  repeated GetOrderListPlanningData data = 1;
+}
+
+message TransferPlanningRequest {
+    string order_id = 1;
+    string order_area = 2;
+    string pool_code = 3;
+    string pool_code_executor = 4;
+    bool is_multi_transfer = 5;
+}
+
+message GetMasterResponse {
+   repeated MasterStatus status = 1;
+   repeated MasterVendor vendors = 2;
+   repeated MasterVendorType vendor_types = 3;
+}
+
+message MasterVendorType {
+  int64 id = 1;
+  string name = 2;
+}
+
+message MasterVendor {
+  string id = 1;
+  int64 vendor_type_id = 2;
+  string name = 3;
+}
+
+message MasterStatus {
+  int64 id  = 1;
+  string name = 2;
+}
+
+message GetOrderListRequest {
+  repeated int32 status = 1;
+  string start_date_time = 2;
+  string end_date_time = 3;
+  string order_area = 4;
+  repeated string executor_code = 5;
+  repeated string creator_code = 6;
+  string driver_id = 7;
+  string driver_name = 8;
+  string vehicle_no = 9;
+  repeated int32 vehicle_type = 10;
+  string customer_data = 11;
+  string keyword = 12;
+  int32 page = 13;
+  int32 limit = 14;
+  string flight_no = 15;
+  int32 order_source = 16;
+  string sort = 17;
+  repeated int32 base_package_ids = 18;
+  string booking_no = 19;
+  repeated string partner_ids = 20;
+  repeated string company_names = 21;
+  bool before_enroute = 22;
+  bool before_ontrip = 23;
+}
+
+message UUID {
+    uint64 id_msb = 1;
+    uint64 id_lsb = 2;
+}
+
+message GetOrderListResponse {
+  int32 total = 3;
+  repeated OrderListData data = 4;
+  int32 total_before_enroute = 5;
+  int32 total_before_ontrip = 6;
+}
+
+message OrderListData {
+  string order_id = 1;
+  string order_number = 2;
+  string reference_id = 3;
+  int32 estimation_time = 4;
+  string executor_code = 5;
+  int32 status = 6;
+  int32 pickup_time = 7;
+  int32 base_package_id = 8;
+  string price_code = 9;
+  string passenger_name = 10;
+  string pickup_location = 11;
+  string destination_location = 12;
+  string company = 13;
+  bool is_sharing = 14;
+  bool is_auto_dispatch = 15;
+  bool is_gage = 16;
+  int32 hail_type = 17;
+  string base_package_name = 18;
+  string vehicle_no = 19;
+  string driver_id = 20;
+  string driver_name = 21;
+  string pool = 22;
+  double mileage = 23;
+  int32 vehicle_type_id = 24;
+  string booking_no = 25;
+  bool is_up_selling = 26;
+  string partner_name = 27;
+  uint64 partner_id_msb = 28;
+  uint64 partner_id_lsb = 29;
+  string flag = 30;
+}
+
+message GetOrderDetailRequest {
+  string order_id = 1;
+}
+
+message DispatchOrderAssignRequest {
+  string fleet_number = 1;
+  int64 order_id = 2;
+  string driver_id = 3;
+  int64 vehicle_id = 4;
+  int64 device_id = 5;
+}
+
+message ListItem {
+  int64 number = 1;
+  string booking_id_lsb = 2;
+  string booking_id_msb = 3;
+}
+
+message GetOrderDetailData {
+  OrderDetailCustomer customer = 1;
+  OrderDetail order = 2;
+  Passenger passenger = 3;
+  OrderNoteDetail order_note = 4;
+  PaymentDetail payment = 5;
+  repeated OrderDetailCustomer customers = 6;
+}
+
+message Passenger {
+  string name = 1;
+  string phone_no = 2;
+}
+
+message OrderDetail {
+  bool is_sharing = 1;
+  bool is_gage = 2;
+  int32 status = 3;
+  string pickup_location = 4;
+  string destination_location = 5;
+  string flight_no = 6;
+  int32 start_time = 7;
+  int32 finish_time = 8;
+  string area = 9;
+  int32 service_type_id = 10;
+  string duration = 11;
+  int32 vehicle_type_id = 12;
+  string request_driver = 13;
+  string executor_code = 14;
+  string gb_rep = 15;
+  bool is_auto_dispatch = 16;
+  string order_id = 17;
+  string pickup_long = 18;
+  string pickup_lat = 19;
+  string dropoff_long = 20;
+  string dropoff_lat = 21;
+  string order_no = 22;
+  bool is_airport = 23;
+  string service_name = 24;
+  string area_stay_overnigt = 25;
+  string flight_time = 26;
+  int32 base_package_id = 27;
+  int32 hail_type = 28;
+  string request_driver_id = 29;
+  string request_driver_name = 30;
+  int32 uang_pengemudi = 31;
+  string preference_driver_id = 32;
+  string preference_vehicle_no = 33;
+  int32 kasbon = 34;
+  int32 return_toll = 35;
+  string base_package_name = 36;
+  int32 estimation_time = 37;
+  string price_code = 38;
+  string return_toll_type = 39;
+  int32 additional_toll = 40;
+  int32 package_toll = 41;
+  double mileage = 42;
+  string creator_code = 43;
+  string booking_no = 44;
+  string partner_name = 45;
+  uint64 partner_id_msb = 46;
+  uint64 partner_id_lsb = 47;
+  string actual_pickup_address = 48;
+  double actual_pickup_latitude = 49;
+  double actual_pickup_longitude = 50;
+  string actual_dropoff_address = 51;
+  double actual_dropoff_latitude = 52;
+  double actual_dropoff_longitude = 53;
+}
+
+message OrderNoteDetail {
+  string over_time = 1;
+  string over_time_payment_method = 2;
+  string toll_parking =3;
+  int32 deposit_toll_parking=4;
+  int32 discount = 5;
+  int32 fare_before = 6;
+  int32 fare_after = 7;
+  string notes = 8;
+  string trip_purpose = 9;
+}
+
+message PaymentDetail {
+  string currency = 1;
+  string payment_method = 2;
+  int32 fare = 3;
+  int32 extra_fare = 4;
+  int32 discount = 5;
+  int32 overtime = 6;
+  int32 total = 7;
+  string note_payment_method = 8;
+  double platform_fee = 9;
+}
+
+message OrderDetailCustomer {
+  string customer_name  = 1;
+  string customer_phone  = 2;
+  string customer_email = 3;
+  string customer_company = 4;
+}
+
+message GetOrderDetailResponse {
+  GetOrderDetailData data = 1;
+}
+
+message Fares {
+  uint32 type = 1;
+  string currency = 2;
+  double amount = 3;
+  string remark = 4;
+}
+
+message DriverConfirmRequest {
+  int64 order_id = 1;
+  string driver_id = 2;
+  string vehicle_no = 3;
+}
+
+message ManualAssignRequest {
+  int64 order_id = 1;
+  string order_number = 2;
+  VehicleData vehicle = 3;
+  int64 uang_pengemudi = 4;
+  int64 kasbon = 5;
+  int64 return_toll = 6;
+  string return_toll_type = 7;
+  bool is_multi_assigned = 8;
+}
+
+message VehicleData {
+  int64 device_id = 1;
+  string vehicle_no = 2;
+  int32 category = 3;
+  int32 vehicle_type = 4;
+  bool airport = 5;
+  double latitude = 6;
+  double longitude = 7;
+  double distance = 8;
+  int64 last_job = 9;
+  int32 rating = 10;
+  double score = 11;
+  string driver_id = 12;
+  int64 vendor_id = 13;
+  int32 vehicle_service_id = 14;
+  int32 service_id = 15;
+  int64 vehicle_id = 16;
+} 
+
+message HealthCheckResp {
+  repeated HealthCheckDt data = 1;
+}
+
+message HealthCheckDt {
+  string name = 1;
+  string status = 2;
+}
+
+message ChangeOrderStatusInfo {
+  int64 order_id = 1;
+  int32 status = 2;
+  int32 status_before = 3;
+  uint64 area_msb = 4;
+  uint64 area_lsb = 5;
+  int32 package_id = 6;
+  string package_name = 7;
+  int64 event_time = 8;
+  bool is_order_edit = 9;
+}
+
+message EditCustomerEmailRequest {
+  string booking_id_lsb = 1;
+  string booking_id_msb = 2;
+  string new_customer_email = 3;
+  string old_customer_email = 4;
+}
+
+message BillingData {
+  string id = 1;
+  string booking_id_msb = 2;
+  string booking_id_lsb = 3;
+  string payment_scheme = 4;
+  string payment_method = 5;
+  int32 total_amount = 6;
+  int32 paid_amount = 7;
+  int32 unpaid_amount = 8;
+  repeated BillingItem items = 9;
+  repeated BillingAttribute attributes = 10;
+}
+
+message BillingItem {
+  // Add fields as needed based on your requirements
+  string item_id = 1;
+  string description = 2;
+  int32 amount = 3;
+}
+
+message BillingAttribute {
+  // Add fields as needed based on your requirements
+  string key = 1;
+  string value = 2;
+}
+
+
+
+message GetBookingDetailResponse {
+  int32 code = 1;
+  string status = 2;
+  string message = 3;
+  Data data = 4;
+
+  message Data {
+    OrderHeader order_header = 1;
+    OrderDetail order_detail = 2;
+    repeated OrderPayment order_payments = 3;
+    repeated ItemDetail item_details = 4;
+    PaymentInfo payment_info = 5;
+    string      async_status = 6;
+    BookingType booking_type = 7;
+
+    enum BookingType {
+      BOOKING_TYPE_UNSPECIFIED = 0;
+      BOOKING_TYPE_REGULAR = 1;
+      BOOKING_TYPE_INSTANT = 2;
+    }
+  }
+
+  message OrderHeader {
+    string id = 1;
+    string customer_code = 2;
+    string customer_name = 3;
+    string customer_phone = 4;
+    string customer_email = 5;
+    string customer_address = 6;
+    string customer_latlong = 7;
+    string company_name = 8;
+    string bill_payer = 9;
+    string overtime_payer = 10;
+    string way_pay_overtime = 11;
+    string currency = 12;
+    string payment_type = 13;
+    string payment_method = 14;
+    string channel = 15;
+    string label = 16;
+    string order_tag = 17;
+    string company_code = 18;
+    string customer_tag = 19;
+    string order_type = 20;
+    int32 service_type_id = 21;
+    string ppn = 22;
+    string company_phone = 23;
+    uint64 booking_id_msb = 24;
+    uint64 booking_id_lsb = 25;
+  }
+
+  message OrderDetail {
+    string id = 1;
+    int32 category_creator = 2;
+    string creator_code = 3;
+    int32 category_executor = 4;
+    string executor_code = 5;
+    string order_no = 6;
+    int32 item_no = 7;
+    string order_status = 8;
+    string so_no = 9;
+    string consumer_name = 10;
+    string consumer_phone = 11;
+    string consumer_email = 12;
+    string consumer_company = 13;
+    bool consumer_sharing = 14;
+    repeated string consumers_sharing = 15;
+    int64 start_time = 16;
+    int64 end_time = 17;
+    int64 estimated_hours = 18;
+    string flight_code = 19;
+    string flight_hour = 20;
+    string pickup_point = 21;
+    string pickup_latlong = 22;
+    string drop_point = 23;
+    string drop_latlong = 24;
+    string secret_notes = 25;
+    string notes = 26;
+    string room_number = 27;
+    string vehicle_no = 28;
+    string vehicle_type = 29;
+    string destination_type = 30;
+    string destination_code = 31;
+    string destination_name = 32;
+    string destination_group = 33;
+    string driver_id = 34;
+    string driver_name = 35;
+    string driver_phone = 36;
+    bool request = 37;
+    string request_note = 38;
+    int32 long_use_days = 39;
+    int32 long_use_hours = 40;
+    string corporate_note_1 = 41;
+    string corporate_note_2 = 42;
+    string discount_type = 43;
+    int32 percent_discount = 44;
+    int32 nominal_discount = 45;
+    repeated OtherCost other_costs = 46;
+    int32 other_cost = 47;
+    int32 rate_dolar = 48;
+    int32 tarif_usd = 49;
+    int32 tarif_idr = 50;
+    int32 total_price = 51;
+    int32 down_payment = 52;
+    int32 remaining_payment = 53;
+    int32 over_payment = 54;
+    int32 driver_money = 55;
+    string driver_money_info = 56;
+    int32 driver_cash_receipt = 57;
+    string no_mc = 58;
+    bool is_auto_dispatch = 59;
+    int32 cancel_fee = 60;
+    string cancel_by = 61;
+    int64 cancel_at = 62;
+    string order_channel = 63;
+    string rate_dolar_info = 64;
+    string destination_info = 65;
+    string vehicle_info = 66;
+    bool is_odd_even_active = 67;
+    int32 toll_status = 68;
+    int32 up = 69;
+    string pickup_terminal = 70;
+    int32 additional_toll = 71;
+    int32 return_toll = 72;
+    int32 cash_receipt_toll = 73;
+    string attention_name = 74;
+    int32 package_toll = 75;
+    int32 deposit_toll = 76;
+    int32 duration_used = 77;
+    string duration_used_unit = 78;
+    string charge_toll_to = 79;
+    string overtime_payer = 80;
+    string overtime_payment_method = 81;
+    string category_trip = 82;
+    string type_trip = 83;
+    int32 gate_toll_fee = 84;
+    string service_type = 85;
+    bool is_pick_drop = 86;
+    string order_id = 87;
+    int32 consumer_toll_fee = 88;
+    int32 consumer_parking_fee = 89;
+    int32 bluebird_toll_fee = 90;
+    int32 bluebird_parking_fee = 91;
+    int32 total_overtime = 92;
+    string promo_code = 93;
+    int32 platform_fee = 94;
+    string order_state = 95;
+    int32 status_id = 96;
+    uint64 merchant_id_msb = 97;
+    uint64 merchant_id_lsb = 98;
+    int32 base_package_id  = 99;
+    uint64 area_id_msb = 100;
+    uint64 area_id_lsb = 101;
+    int32  order_status_id = 102;
+    string merchant_name = 103; 
+    string merchant_code = 104; 
+    string merchant_phone = 105;
+    string booking_source = 106;
+    uint64 pickup_zone_msb = 107;
+    uint64 pickup_zone_lsb = 108;
+    uint64 dropoff_zone_msb = 109;
+    uint64 dropoff_zone_lsb = 110;
+    int32  package_id = 111;
+    int32  vehicle_id = 112;
+    int32  vehicle_class_id = 113;
+    int32  hail_type = 114;
+    string partner_name = 115;
+    uint64 partner_id_msb = 116;
+    uint64 partner_id_lsb = 117;
+    string actual_pickup_address = 118;
+    double actual_pickup_latitude = 119;
+    double actual_pickup_longitude = 120;
+    string actual_dropoff_address = 121;
+    double actual_dropoff_latitude = 122;
+    double actual_dropoff_longitude = 123;
+  }
+
+  message OrderPayment {
+    string id = 1;
+    string hotel_name = 2;
+    string hotel_code = 3;
+    string no_mc = 4;
+    bool complementary = 5;
+    string no_cof = 6;
+    int32 payment_usd = 7;
+    int32 payment_idr = 8;
+    int32 remaining = 9;
+    int32 over_payment = 10;
+    string payment_type = 11;
+    string payment_method = 12;
+    string overtime_payer = 13;
+    string way_pay_overtime = 14;
+    string bank_transfer_name = 15;
+    string no_credit_card = 16;
+    string name_credit_card = 17;
+    string type_credit_card = 18;
+    string hold_credit_card = 19;
+    google.protobuf.Timestamp expired_credit_card = 20;
+    string edc_credit_card = 21;
+    string no_batch_credit_card = 22;
+    string no_approval_credit_card = 23;
+    string no_track_credit_card = 24;
+    string approval_code = 25;
+    string payment_link = 26;
+    string bank_account_number = 27;
+    string cash_to = 28;
+    int32 base_price = 29;
+    int32 total_price = 30;
+    int32 down_payment = 31;
+    int32 remaining_payment = 32;
+    int32 nominal_discount = 33;
+    int32 percentage_discount = 34;
+    string room_number = 35;
+    string currency = 36;
+    string bank_edc = 37;
+    string card_type = 38;
+    int32 total_additional_toll = 39;
+    int32 total_package_toll = 40;
+    int32 total_deposit_toll = 41;
+    string attention_name = 42;
+  }
+
+  message ItemDetail {
+    string id = 1;
+    string order_no = 2;
+    int32  item_no = 3;
+    string order_area = 4;
+    int64  order_id = 5;
+  }
+
+  message PaymentInfo {
+    string id = 1;
+    string currency = 2;
+    string payment_link = 3;
+    string payment_method = 4;
+    string payment_type = 5;
+    string attention_name = 6;
+    string no_cof = 7;
+    string room_number = 8;
+    string no_mc = 9;
+    string cash_to = 10;
+    string bank_transfer_name = 11;
+    string bank_account_number = 12;
+    string bank_edc = 13;
+    string card_type = 14;
+    string approval_code = 15;
+    bool complementary = 16;
+    int32 nominal_discount = 17;
+    int32 percentage_discount = 18;
+    int32 down_payment = 19;
+    int32 base_price = 20;
+    int32 total_price = 21;
+    int32 total_additional_toll = 22;
+    int32 total_package_toll = 23;
+    int32 total_deposit_toll = 24;
+    string no_batch = 25;
+    int32 customer_toll_parking = 26;
+    int32 bluebird_toll_parking = 27;
+    bool is_refund = 28;
+    int32 overtime_package_toll = 29;
+    int32 extra_fee = 30;
+    int32 total_overtime = 31;
+    int32 total_platform_fee = 32;
+  }
+
+  message OtherCost {
+    string description = 1;
+    int32 amount = 2;
+  }
+}
+
+message GetBookingListRequest {
+  string driver_id = 1;
+  string state = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message GetBookingListResponse {
+  repeated BookingItem items = 1;
+  int64 total_count = 2;
+}
+
+message BookingItem {
+  string booking_no = 1;
+  string pickup_location = 2;
+  string dropoff_location = 3;
+}
+

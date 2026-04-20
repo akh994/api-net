@@ -1,0 +1,261 @@
+syntax = "proto3";
+option csharp_namespace = "DriverOperation.Protos";
+package DriverOperation;
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "Protos/Common.proto";
+
+message DriverModel {
+	int32 id = 1 [json_name="id"];
+	google.protobuf.StringValue driver_id = 2 [json_name="driver_id"];
+	google.protobuf.StringValue name = 3 [json_name="name"];
+	google.protobuf.StringValue ex_driver_id = 4 [json_name="ex_driver_id"];
+	int32 sequence_driver_id = 5 [json_name="sequence_driver_id"];
+	int32 driver_type = 6 [json_name="driver_type"];
+	int32 driver_class = 7 [json_name="driver_class"];
+	google.protobuf.StringValue pool_id = 8 [json_name="pool_id"];
+	google.protobuf.StringValue company_id = 9 [json_name="company_id"];
+	google.protobuf.StringValue join_date = 10 [json_name="join_date"];
+	google.protobuf.StringValue join_date_company = 11 [json_name="join_date_company"];
+	google.protobuf.StringValue permanent_date = 12 [json_name="permanent_date"];
+	int32 status = 13 [json_name="status"];
+	google.protobuf.StringValue kpp_valid_date = 14 [json_name="kpp_valid_date"];
+	google.protobuf.StringValue pin = 15 [json_name="pin"];
+	google.protobuf.StringValue notes = 16 [json_name="notes"];
+	google.protobuf.StringValue created_at = 17 [json_name="created_at"];
+	google.protobuf.StringValue created_by = 18 [json_name="created_by"];
+	google.protobuf.StringValue updated_at = 19 [json_name="updated_at"];
+	google.protobuf.StringValue updated_by = 20 [json_name="updated_by"];
+}
+
+message resDriverAll {
+    repeated DriverModel list_driver = 1;
+}
+
+message DriverEmpty {
+}
+
+message resDriverMessage {
+    string message = 1;
+}
+
+message ReqUpdateDriver {
+    string driver_id = 1 [json_name= "driver_id"];
+    int32 golongan_id = 2 [json_name= "golongan_id"];
+    int32 class_vehicle_type_id = 3 [json_name= "class_vehicle_type_id"];
+    int32 grade_id = 4 [json_name= "grade_id"];
+}
+
+message ReqUpdateMultipleGradeDriver {
+    repeated ReqUpdateMultipleGradeDriverModel list_driver = 1 [json_name= "list_driver"];
+}
+
+message ReqUpdateMultipleGradeDriverModel {
+    string driver_id = 1 [json_name= "driver_id"];
+    int32 grade_id = 2 [json_name= "grade_id"];
+}
+
+message ReqDriverByDriverId {
+    string driver_id = 1 [json_name= "driver_id"];
+    optional google.protobuf.BoolValue is_all_data = 2 [json_name="is_all_data"];
+}
+
+message ResDriverByDriverId {
+    int32 id = 1 [json_name = "id"];
+    string driver_id = 2 [json_name = "driver_id"];
+    string driver_name = 3 [json_name = "driver_name"];
+    int32 vehicle_class_id = 4 [json_name = "vehicle_class_id"];
+    string vehicle_class_code = 5 [json_name = "vehicle_class_code"];
+    int32 grade_id = 6 [json_name = "grade_id"];
+    string grade_code = 7 [json_name = "grade_code"];
+    string grade_name = 8 [json_name = "grade_name"];
+    int32 golongan_id = 9 [json_name = "golongan_id"];
+    string golongan_name = 10 [json_name = "golongan_name"];
+    string kondite_value = 11 [json_name = "kondite_value"];
+    string updated_at = 12 [json_name = "updated_at"];
+    DriverProtoModel driver_info = 13 [json_name = "driver_info"];
+    PersonaliaProtoModel personalia = 14 [json_name = "personalia"];
+    AddressProtoModel address = 15 [json_name = "address"];
+    google.protobuf.StringValue driver_class = 16 [json_name = "driver_class"];
+    google.protobuf.StringValue operation_shift = 17 [json_name = "operation_shift"];
+    google.protobuf.StringValue driver_class_id = 18 [json_name = "driver_class_id"];
+    google.protobuf.StringValue operation_shift_desc = 19 [json_name = "operation_shift_desc"];
+    int32 vehicle_type_id = 20 [json_name = "vehicle_type_id"];
+    google.protobuf.StringValue vehicle_type_code = 21 [json_name = "vehicle_type_code"];
+    google.protobuf.StringValue vehicle_type_name = 22 [json_name = "vehicle_type_name"];
+    google.protobuf.StringValue phone_number = 23 [json_name = "phone_number"];
+    bool is_problematic = 24 [json_name="is_problematic"];
+}
+
+message DriverProtoModel {
+    string gender = 1 [json_name = "gender"];
+    string birth_place = 2 [json_name = "birth_place"];
+    string birth_date = 3 [json_name = "birth_date"];
+    string id_card = 4 [json_name = "id_card"];
+    string email = 5 [json_name = "email"];
+    string phone_number = 6 [json_name = "phone_number"];
+    string driver_license_number = 7 [json_name = "driver_license_number"];
+    string driver_license_type = 8 [json_name = "driver_license_type"];
+    string driver_license_valid_date = 9 [json_name = "driver_license_valid_date"];
+}
+
+message PersonaliaProtoModel {
+    string status = 1 [json_name = "status"];
+    int32 point_order = 2 [json_name = "point_order"];
+    string company_id = 3 [json_name = "company_id"];
+    string pool_id = 4 [json_name = "pool_id"];
+    string kpp_valid_date = 5 [json_name = "kpp_valid_date"];
+    string join_date_company = 6 [json_name = "join_date_company"];
+    string permanent_date = 7 [json_name = "permanent_date"];
+    string working_time = 8 [json_name = "working_time"];
+    string bank_name = 9 [json_name = "bank_name"];
+    string account_name = 10 [json_name = "account_name"];
+    string account_number = 11 [json_name = "account_number"];
+    string driver_type = 12 [json_name = "driver_type"];
+    string ethnic = 13 [json_name = "ethnic"];
+    string other_ethnic = 14 [json_name = "other_ethnic"];
+    google.protobuf.StringValue resign_reason = 15 [json_name = "resign_reason"];
+}
+
+message AddressProtoModel {
+    string province_by_id = 1 [json_name = "province_by_id"];
+    string city_by_id = 2 [json_name = "city_by_id"];
+    string district_by_id = 3 [json_name = "district_by_id"];
+    string sub_district_by_id = 4 [json_name = "sub_district_by_id"];
+    string postal_code_by_id = 5 [json_name = "postal_code_by_id"];
+    string address_by_id = 6 [json_name = "address_by_id"];
+}
+
+message ReqGetListDriverOperation{
+    string pool_id = 1 [json_name="pool_id"];
+    int32 tab_category = 2 [json_name="tab_category"];
+    string id = 3 [json_name="id"];
+    string search = 4 [json_name="search"];
+    string license_type_id = 5 [json_name="license_type_id"];
+    string golongan_id = 6 [json_name="golongan_id"];
+    string vehicle_class_id = 7 [json_name="vehicle_class_id"];
+    string grade_id = 8 [json_name="grade_id"];
+    int32 is_kadaluwarsa = 9 [json_name="is_kadaluwarsa"];
+    int32 page_size = 10 [json_name="page_size"];
+    int32 page = 11 [json_name="page"];
+    string sort_by = 12 [json_name="sort_by"];
+    string sort_type = 13 [json_name="sort_type"];
+    string company_id = 14 [json_name="company_id"];
+    string driver_id = 15 [json_name="driver_id"];
+    int32 driver_class = 16 [json_name="driver_class"];
+    string status = 17 [json_name="status"];
+    string operation_shift = 18 [json_name="operation_shift"];
+    optional bool is_maintained = 19 [json_name="is_maintained"];
+    string grade_code = 20 [json_name="grade_code"];
+    string vehicle_type_id = 21 [json_name="vehicle_type_id"];
+    bool exclude_problematic = 22 [json_name="exclude_problematic"];
+}
+
+message GetListDriverData{
+    int32 id = 1 [json_name="id"];
+    string driver_id = 2 [json_name="driver_id"];
+    string driver_name = 3 [json_name="driver_name"];
+    string license_type = 4 [json_name="license_type"];
+    string driver_license_valid_date =  5 [json_name="driver_license_valid_date"];
+    string golongan_name = 6 [json_name="golongan_name"];
+    int32 vehicle_class_id = 7 [json_name="vehicle_class_id"];
+    string vehicle_class_code = 8 [json_name="vehicle_class_code"];
+    string grade_name = 9 [json_name="grade_name"];
+    string grade_code = 10 [json_name="grade_code"];
+    string join_date_company = 11 [json_name="join_date_company"];
+    string license_valid_date_remaining = 12 [json_name="license_valid_date_remaining"];
+    int32 grade_id = 13 [json_name="grade_id"];
+    int32 golongan_id = 14 [json_name="golongan_id"];
+    string operation_shift = 15 [json_name="operation_shift"];
+    string status = 16 [json_name="status"];
+    string driver_type = 17 [json_name="driver_type"];
+    string phone_number = 18 [json_name="phone_number"];
+    bool is_maintained = 19 [json_name="is_maintained"];
+    int32 vehicle_type_id = 20 [json_name="vehicle_type_id"];
+    string vehicle_type_code = 21 [json_name="vehicle_type_code"];
+    string vehicle_type_name = 22 [json_name="vehicle_type_name"];
+    google.protobuf.Int32Value driver_class = 23 [json_name = "driver_class"];
+}
+
+message ResGetListDriverOperation{
+    repeated GetListDriverData list_driver = 1 [json_name="list_driver"];
+    Common.Metadata metadata = 2 [json_name="metadata"];
+}
+
+message ReqGetAvailableDriverForPlanning{
+    google.protobuf.StringValue pool_id = 1 [json_name="pool_id"];
+    google.protobuf.StringValue operation_shift = 2 [json_name="operation_shift"];
+    google.protobuf.StringValue vehicle_type_id = 3 [json_name="vehicle_type_id"];
+    google.protobuf.StringValue search = 4 [json_name="search"];
+    google.protobuf.StringValue exclude_driver_ids = 5 [json_name="exclude_driver_ids"];
+    google.protobuf.StringValue golongan_id = 6 [json_name="golongan_id"];
+    optional bool is_maintained = 7 [json_name="is_maintained"];
+    optional bool is_problematic = 8 [json_name="is_problematic"];
+    int32 status = 9 [json_name="status"];
+    int32 page = 10 [json_name="page"];
+    int32 page_size = 11 [json_name="page_size"];
+}
+
+
+message GetListDriverDataForPlanning{
+    int32 id = 1; 
+    google.protobuf.StringValue driver_id = 2 [json_name="driver_id"];
+    google.protobuf.StringValue driver_name = 3 [json_name="driver_name"];
+    int32 vehicle_type_id = 4 [json_name="vehicle_type_id"];
+    google.protobuf.StringValue vehicle_type_code = 5 [json_name="vehicle_type_code"];
+    google.protobuf.StringValue vehicle_type_name = 6 [json_name="vehicle_type_name"];
+    google.protobuf.StringValue operation_shift = 7 [json_name="operation_shift"];
+    int32 operation_shift_id = 8 [json_name="operation_shift_id"];
+    bool is_problematic = 9 [json_name="is_problematic"];
+}
+
+message ResGetAvailableDriverForPlanning{
+    repeated GetListDriverDataForPlanning list_driver = 1 [json_name="list_driver"];
+    Common.Metadata metadata = 2 [json_name="metadata"];
+}
+
+message ReqGetListByDriverIds{
+    google.protobuf.StringValue driver_ids = 1 [json_name="driver_ids"];
+}
+
+service DriverGrpcService {
+	rpc Update(ReqUpdateDriver) returns (resDriverMessage){
+	  option (google.api.http) = {
+	      put: "/v1/driver-operation/driver",
+	      body:"*"
+	  };
+	}
+
+	rpc GetByDriverId(ReqDriverByDriverId) returns (ResDriverByDriverId){
+	  option (google.api.http) = {
+	      get: "/v1/driver-operation/driver/{driver_id}"
+	  };
+	}
+
+    rpc GetListDriverOperation (ReqGetListDriverOperation) returns (ResGetListDriverOperation){
+        option (google.api.http) = {
+            get: "/v1/driver-operation/drivers"
+        };
+    }
+
+	rpc UpdateMultipleGradeDriver(ReqUpdateMultipleGradeDriver) returns (resDriverMessage){
+	  option (google.api.http) = {
+	      put: "/v1/driver-operation/driver/grades",
+	      body:"*"
+	  };
+	}
+
+    rpc GetAvailableDriverForPlanning(ReqGetAvailableDriverForPlanning) returns (ResGetAvailableDriverForPlanning){
+        option (google.api.http) = {
+            get: "/v1/driver-operation/drivers/available"
+        };
+    }
+
+    rpc GetListByDriverIds (ReqGetListByDriverIds) returns (ResGetListDriverOperation){
+        option (google.api.http) = {
+            get: "/v1/driver-operation/specific-drivers"
+        };
+    }
+}

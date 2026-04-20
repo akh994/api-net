@@ -1,0 +1,375 @@
+@startuml Add User and User Created Consumer Flow - .NET
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam BoxPadding 10
+skinparam ParticipantPadding 20
+
+title Add User Action & User Created Consumer Flow\n(skeleton-api-net Clean Architecture - .NET 10)
+
+' Define participants by layer
+actor Client as client
+box "Presentation Layer" #E3F2FD
+    participant "UserGrpcService\n(gRPC)" as grpc
+    participant "SseEndpoint\n(ASP.NET Controller)" as http
+    participant "UserCreatedConsumer\n(BackgroundService)" as consumer
+end box
+
+box "Application Layer" #F3E5F5
+    participant "UserService\n(IUserService)" as service
+end box
+
+box "Domain Layer" #FFF3E0
+    participant "User\n(Entity)" as domain
+end box
+
+box "Infrastructure Layer" #E8F5E9
+    participant "UserRepository\n(Dapper)" as repository
+    participant "CacheRepository\n(Redis)" as cache
+    participant "UserMessagePublisher\n(RabbitMQ)" as publisher
+    participant "UserGrpcRepository\n(gRPC Client)" as grpc_client
+    participant "UserRestRepository\n(HTTP Client)" as rest_client
+    participant "SseManager" as sse
+end box
+
+box "Infrastructure" #FFEBEE
+    database "MySQL Database" as db
+    database "Redis Cache" as redis
+    queue "RabbitMQ\n(user.created)" as rabbitmq
+    participant "External Service\n(gRPC/REST)" as external
+end box
+
+box "Cross-Cutting Concerns" #F1F8E9
+    participant "UserValidator\n(FluentValidation)" as validator
+    participant "UserMapper" as mapper
+    participant "Elastic APM" as apm
+    participant "Serilog Logger" as logger
+    participant "FeatureFlagService\n(OpenFeature)" as feature_flag
+    participant "SingleFlight\n(Concurrency)" as singleflight
+end box
+
+== Add User Flow ==
+
+client -> grpc: Add(UserModel)
+activate grpc
+grpc -> apm: Start Transaction\n"POST /proto.UserGrpcService/Add"
+activate apm
+
+grpc -> mapper: ToDomain(UserModel)
+activate mapper
+mapper --> grpc: User entity
+deactivate mapper
+
+grpc -> service: CreateAsync(user)
+activate service
+
+' Validation with FluentValidation
+service -> validator: ValidateAsync(user)
+activate validator
+validator --> service: ValidationResult
+deactivate validator
+
+alt Validation Failed
+    service -> grpc: throw ValidationException
+    grpc -> client: RpcException\n(StatusCode.InvalidArgument)
+end
+
+' Generate GUID and timestamps
+service -> service: Generate Guid.NewGuid()\nSet CreatedAt, UpdatedAt
+
+' Check email exists
+service -> repository: GetByEmailAsync(email)
+activate repository
+repository -> db: SELECT * FROM users\nWHERE email = @email
+activate db
+db --> repository: User?
+deactivate db
+repository --> service: existingUser
+deactivate repository
+
+alt Email Already Exists
+    service -> grpc: throw InvalidOperationException
+    grpc -> client: RpcException\n(StatusCode.AlreadyExists)
+end
+
+' Database operation with Dapper
+service -> repository: CreateAsync(user)
+activate repository
+repository -> apm: Start Span\n"INSERT INTO users"
+repository -> db: INSERT INTO users\n(id, username, email, ...)\nusing Dapper
+activate db
+db --> repository: rows affected
+deactivate db
+repository --> service: void
+deactivate repository
+
+' Cache operations
+service -> cache: RemoveAsync("users:all")
+activate cache
+cache -> redis: DEL users:all
+activate redis
+redis --> cache: OK
+deactivate redis
+cache --> service: void
+deactivate cache
+
+service -> cache: SetAsync($"user:{id}", user, 10min)
+activate cache
+cache -> redis: SET user:{id}\nEX 600
+activate redis
+redis --> cache: OK
+deactivate redis
+cache --> service: void
+deactivate cache
+
+' Publish event (best effort)
+service -> publisher: PublishUserCreatedAsync(user)
+activate publisher
+publisher -> apm: Start Span\n"publish_user_created"
+publisher -> publisher: Serialize to JSON\n{id, username, email, ...}
+publisher -> apm: Extract trace context\n(Activity.Current)
+note right of publisher
+  Headers:
+  - traceparent (W3C Trace Context)
+  - trace.id
+  - transaction.id
+end note
+publisher -> rabbitmq: PublishAsync\n(topic: "user.created",\nbody: JSON,\nheaders: trace context)
+activate rabbitmq
+rabbitmq --> publisher: ACK
+deactivate rabbitmq
+publisher -> logger: LogInformation\n("Published user.created event")
+publisher --> service: void
+deactivate publisher
+
+service -> logger: LogInformation\n("User created successfully")
+service --> grpc: User entity
+deactivate service
+
+grpc -> apm: End Transaction\n(Result: success)
+deactivate apm
+
+grpc --> client: ResUserMessage\n{Message: "User created successfully"}
+deactivate grpc
+
+== User Created Consumer Flow ==
+
+rabbitmq -> consumer: Consume message\n(topic: "user.created",\nheaders: {traceparent, ...},\nbody: JSON)
+activate consumer
+
+consumer -> apm: Activity.Current\n(W3C Trace Context)
+activate apm
+note right of consumer
+  Extract from headers:
+  - traceparent header
+  - Links to parent transaction
+  for distributed tracing
+end note
+
+consumer -> logger: LogInformation\n("Received user.created message")
+activate logger
+logger --> consumer
+deactivate logger
+
+consumer -> consumer: Deserialize JSON\nto UserCreatedMessage
+
+consumer -> consumer: Create DI Scope\n(IServiceProvider.CreateScope())
+
+consumer -> service: ProcessUserCreatedAsync(userId)
+activate service
+
+service -> singleflight: DoAsync($"process_user_created:{userId}")
+activate singleflight
+
+' Feature flag check
+service -> feature_flag: IsEnabledAsync("grpc-client", context)
+activate feature_flag
+feature_flag --> service: bool useGrpc
+deactivate feature_flag
+
+alt Feature Flag: grpc-client = true
+    service -> grpc_client: GetUserAsync(userId)
+    activate grpc_client
+    grpc_client -> external: gRPC Call\nGetById(userId)
+    activate external
+    external --> grpc_client: UserModel
+    deactivate external
+    grpc_client -> mapper: ToDomain(UserModel)
+    activate mapper
+    mapper --> grpc_client: User entity
+    deactivate mapper
+    grpc_client --> service: User
+    deactivate grpc_client
+    service -> logger: LogInformation\n("Retrieved user via gRPC")
+else Feature Flag: grpc-client = false
+    service -> rest_client: GetUserAsync(userId)
+    activate rest_client
+    rest_client -> external: HTTP GET\n/v1/user/{userId}
+    activate external
+    external --> rest_client: JSON Response
+    deactivate external
+    rest_client -> rest_client: Deserialize JSON\nto User entity
+    rest_client --> service: User
+    deactivate rest_client
+    service -> logger: LogInformation\n("Retrieved user via REST")
+end
+
+' SSE broadcast (best effort)
+service -> sse: PublishToRedisAsync\n(SseEvent{type: "user_created", data: user})
+activate sse
+sse -> redis: PUBLISH sse:events\n{type, data}
+activate redis
+redis --> sse: OK
+deactivate redis
+sse --> service: void
+deactivate sse
+
+service -> logger: LogInformation\n("Published user_created event to SSE")
+
+singleflight --> service: void
+deactivate singleflight
+
+service --> consumer: void
+deactivate service
+
+consumer -> apm: End Transaction\n(Result: success)
+deactivate apm
+
+consumer -> consumer: context.Ack()
+consumer --> rabbitmq: ACK
+deactivate consumer
+
+== SSE Stream Users Flow ==
+
+client -> http: HTTP GET /api/v1/users/stream
+activate http
+note right of client
+  Client connects to SSE endpoint
+  to receive real-time user updates
+end note
+
+http -> apm: Start Transaction\n"SSE Stream"
+activate apm
+
+http -> http: Set SSE Headers\n(Content-Type: text/event-stream,\nCache-Control: no-cache,\nConnection: keep-alive)
+
+http -> http: Generate clientId\n(Guid.NewGuid())
+
+http -> logger: LogInformation\n("SSE connection started")
+activate logger
+logger --> http
+deactivate logger
+
+' Send connected event
+http -> http: SendSseEventAsync\n(SseEvent{type: "connected", data: {clientId}})
+http -> client: SSE: event: connected\ndata: {clientId}\n\n
+
+' Get initial data
+http -> service: GetAllAsync()
+activate service
+
+service -> singleflight: DoAsync("get_all_users")
+activate singleflight
+
+service -> cache: GetAsync<IEnumerable<User>>("users:all")
+activate cache
+cache -> redis: GET users:all
+activate redis
+redis --> cache: cached data / null
+deactivate redis
+cache --> service: users / null
+deactivate cache
+
+alt Cache Miss
+    service -> repository: GetAllAsync()
+    activate repository
+    repository -> db: SELECT * FROM users\nusing Dapper
+    activate db
+    db --> repository: List<User>
+    deactivate db
+    repository --> service: users
+    deactivate repository
+    
+    service -> cache: SetAsync("users:all", users, 5min)
+    activate cache
+    cache -> redis: SET users:all\nEX 300
+    activate redis
+    redis --> cache: OK
+    deactivate redis
+    cache --> service: void
+    deactivate cache
+end
+
+singleflight --> service: users
+deactivate singleflight
+
+service --> http: IEnumerable<User>
+deactivate service
+
+' Send initial users
+http -> http: SendSseEventAsync\n(SseEvent{type: "users", data: users})
+http -> client: SSE: event: users\ndata: [{users}]\n\n
+http -> http: Response.Body.FlushAsync()
+
+' Register client with SSE Manager
+http -> sse: AddClientAsync(clientId, SendSseEventAsync, cancellationToken)
+activate sse
+sse -> sse: Add to ConcurrentDictionary\n_clients[clientId] = sendAsync
+sse -> logger: LogInformation\n("SSE client connected")
+sse -> sse: Task.Delay(Infinite, cancellationToken)
+note right of sse
+  Keep connection open
+  until client disconnects
+  or cancellation requested
+end note
+
+alt Client Disconnects
+    client -> http: Connection closed
+    http -> sse: OperationCanceledException
+    sse -> sse: Remove from _clients
+    sse -> logger: LogInformation\n("SSE client disconnected")
+    sse --> http: void
+    deactivate sse
+    http -> apm: End Transaction
+    deactivate apm
+    http --> client: Connection closed
+    deactivate http
+end
+
+== Real-time Update via SSE ==
+
+note over sse
+  When user.created event is published to Redis,
+  SSE Manager broadcasts to all connected clients
+end note
+
+redis -> sse: Redis Pub/Sub Message\n(channel: "sse:events")
+activate sse
+
+sse -> sse: SubscribeToRedisAsync\nreceives message
+
+sse -> sse: Deserialize JSON\nto SseEvent{type, data}
+
+sse -> logger: LogInformation\n("Received SSE event from Redis")
+
+sse -> sse: BroadcastLocalAsync(sseEvent)
+
+loop For each client in _clients
+    sse -> sse: Try send to client.Value(sseEvent)
+    note right of sse
+      Non-blocking send.
+      Logs warning if client fails,
+      but continues to other clients.
+    end note
+end
+
+sse -> logger: LogInformation\n("Broadcasting SSE event locally", clients: N)
+
+sse -> http: Invoke SendSseEventAsync delegate
+http -> client: SSE: event: user_created\ndata: {user}\n\n
+http -> http: Response.Body.FlushAsync()
+
+deactivate sse
+
+@enduml

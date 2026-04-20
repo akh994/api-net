@@ -1,0 +1,14 @@
+{
+    "brokerType": "rabbitmq",
+    "methods": [
+        {
+            "name": "AthleteCreated",
+            "topic": "athlete.created",
+            "subscription": "athlete.created.sub",
+            "payload": {
+                "id": "string",
+                "name": "string"
+            }
+        }
+    ]
+}

@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "skeleton-api-go/proto";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+
+message User {
+	google.protobuf.StringValue id = 2 [json_name="id"];
+	google.protobuf.StringValue username = 3 [json_name="username"];
+	google.protobuf.StringValue email = 4 [json_name="email"];
+	google.protobuf.StringValue password = 5 [json_name="password"];
+	google.protobuf.StringValue full_name = 6 [json_name="full_name"];
+	google.protobuf.StringValue avatar = 7 [json_name="avatar"];
+	google.protobuf.StringValue role = 8 [json_name="role"];
+	google.protobuf.BoolValue is_active = 9 [json_name="is_active"];
+	google.protobuf.BoolValue email_verified = 10 [json_name="email_verified"];
+	google.protobuf.Timestamp created_at = 11 [json_name="created_at"];
+	google.protobuf.Timestamp updated_at = 12 [json_name="updated_at"];
+}
+
+message ResUserAll {
+    repeated User items = 1;
+}
+
+message UserEmpty {
+}
+
+message ResUserMessage {
+    string message = 1;
+}
+
+message UserSearchRequest {
+	google.protobuf.StringValue query = 1 [json_name="query"];
+}
+
+message UserByIdRequest {
+	string id = 1 [json_name="id"];
+}
+
+// Pagination request
+message PaginationRequest {
+	int32 page = 1 [json_name="page"];
+	int32 page_size = 2 [json_name="page_size"];
+}
+
+// Pagination metadata
+message PaginationMeta {
+	int32 page = 1 [json_name="page"];
+	int32 page_size = 2 [json_name="page_size"];
+	int64 total_items = 3 [json_name="total_items"];
+	int32 total_pages = 4 [json_name="total_pages"];
+}
+
+// Paginated user response
+message ResUserPaginated {
+	repeated User items = 1 [json_name="items"];
+	PaginationMeta pagination = 2 [json_name="pagination"];
+}
+
+service UserGrpcService {
+	rpc Add(User) returns (ResUserMessage){
+	  option(google.api.http) = {
+	      post: "/v1/user",
+	      body:"*"
+	  };
+	}
+
+	rpc GetAll(UserEmpty) returns (ResUserAll){
+	  option(google.api.http) = {
+	      get: "/v1/user"
+	  };
+	}
+
+	rpc GetById(UserByIdRequest) returns (User){
+	  option(google.api.http) = {
+	      get: "/v1/user/{id}"
+	  };
+	}
+
+	rpc Update(User) returns (ResUserMessage){
+	  option(google.api.http) = {
+	      put: "/v1/user/{id}",
+	      body:"*"
+	  };
+	}
+
+	rpc Delete(UserByIdRequest) returns (ResUserMessage){
+	  option(google.api.http) = {
+	      delete: "/v1/user/{id}"
+	  };
+	}
+
+	rpc Search(UserSearchRequest) returns (ResUserAll){
+	  option(google.api.http) = {
+	      post: "/v1/user/search",
+	      body:"*"
+	  };
+	}
+
+	rpc GetAllPaginated(PaginationRequest) returns (ResUserPaginated){
+	  option(google.api.http) = {
+	      get: "/v1/users/paginated"
+	  };
+	}
+}

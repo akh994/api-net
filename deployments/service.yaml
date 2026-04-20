@@ -1,0 +1,184 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: skeleton-api-net
+  labels:
+    app: skeleton-api-net
+spec:
+  type: NodePort
+  ports:
+    - port: 4021
+      targetPort: 4021
+      protocol: TCP
+      name: http
+    - port: 4022
+      targetPort: 4022
+      protocol: TCP
+      name: grpc
+    - port: 4023
+      targetPort: 4023
+      protocol: TCP
+      name: https
+  selector:
+    app: skeleton-api-net
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: skeleton-api-net
+  labels:
+    app: skeleton-api-net
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: skeleton-api-net
+  strategy:
+    rollingUpdate:
+      maxUnavailable: "25%"
+  template:
+    metadata:
+      labels:
+        app: skeleton-api-net
+    spec:
+      initContainers:
+      - name: keytool
+        image: asia.gcr.io/helical-element-182307/keytool:1.0.0
+        command:
+          - keytool
+          - "-hours"
+          - "5294967295"
+          - "-cacert"
+          - "/var/secrets/ssl/ca-cert.pem"
+          - "-cakey"
+          - "/var/secrets/ssl/ca-key.pem"
+          - "-serverca"
+          - "/certs/ca.pem"
+          - "-servercert"
+          - "/certs/server.pem"
+          - "-serverkey"
+          - "/certs/key.pem"
+          - "*.bluebird.id"
+          - "127.0.0.1"
+          - "skeleton-api-net"
+          - "skeleton-api-net.default.svc.cluster.local"
+          - "skeleton-api-net.default"
+        volumeMounts:
+        - name: certificate
+          mountPath: /var/secrets/ssl
+          readOnly: true
+        - name: certs-volume
+          mountPath: /certs
+      containers:
+      - name: skeleton-api-net
+        image: skeleton-api-net:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 4021
+          name: http
+        - containerPort: 4022
+          name: grpc
+        - containerPort: 4023
+          name: https
+        - containerPort: 6060
+          name: diagnostics
+          # NOTE: diagnostics port NOT exposed via Service for security
+          # Access via: kubectl port-forward pod/POD_NAME 6060:6060
+        env:
+        - name: Server__CertFile
+          value: "/certs/server.pem"
+        - name: Server__KeyFile
+          value: "/certs/key.pem"
+        - name: Observability__ElasticApm__ServerUrl
+          valueFrom:
+            configMapKeyRef:
+              name: configmap-apm
+              key: ELASTIC_APM_SERVER_URL
+        - name: Observability__ElasticApm__Environment
+          valueFrom:
+            configMapKeyRef:
+              name: configmap-apm
+              key: ELASTIC_APM_ENVIRONMENT
+        - name: Observability__ElasticApm__ServiceName
+          value: skeleton-api-net
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /var/secrets/google/pubsub.json
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 4021
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 4021
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        volumeMounts:
+        - name: certs-volume
+          mountPath: /certs
+          readOnly: true
+        - name: google-cloud-key
+          mountPath: /var/secrets/google
+          readOnly: true
+        - name: appsettings-volume
+          mountPath: /app/appsettings.json
+          subPath: appsettings.json
+          readOnly: true  
+        lifecycle:
+          preStop:
+            exec:
+              command:
+                - /bin/sleep
+                - "20"
+      volumes:
+      - name: certs-volume
+        emptyDir: {}
+      - name: google-cloud-key
+        secret:
+          secretName: pubsub-key
+      - name: certificate
+        secret:
+          secretName: ca-key
+      - name: appsettings-volume
+        secret:
+          secretName: secret-skeleton-api-net    
+      terminationGracePeriodSeconds: 180
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: skeleton-api-net-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: skeleton-api-net
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80

@@ -1,0 +1,168 @@
+# Feature Flag Configuration for skeleton-api-net
+# This file defines feature flags for the application
+# Note: Currently using Flipt provider (server-based), but this file can be used
+# if switching to file-based providers like go-feature-flag or OpenFeature file provider
+
+# Example: gRPC client toggle
+grpc-client:
+  description: "Use gRPC client instead of REST client for user operations"
+  variations:
+    enabled: true
+    disabled: false
+  defaultRule:
+    variation: disabled
+  targeting:
+    # Enable for specific environments
+    - query: environment eq "production"
+      variation: enabled
+    # Enable for specific users for testing
+    - query: key eq "flagtest"
+      variation: enabled
+    # Gradual rollout (50% of requests)
+    - query: ""
+      percentage:
+        enabled: 50
+        disabled: 50
+
+# Example: New user processing feature
+new-user-processing:
+  description: "Enable new user processing workflow with enhanced validation"
+  variations:
+    enabled: true
+    disabled: false
+  defaultRule:
+    variation: disabled
+  targeting:
+    # Enable for specific users
+    - query: key eq "user-123"
+      variation: enabled
+    # Enable for admin users
+    - query: role eq "admin"
+      variation: enabled
+    # Percentage rollout (10% of users)
+    - query: ""
+      percentage:
+        enabled: 10
+        disabled: 90
+
+# Example: Enhanced email notifications
+enhanced-email-notifications:
+  description: "Use new email template with rich formatting"
+  variations:
+    enabled: true
+    disabled: false
+  defaultRule:
+    variation: disabled
+  targeting:
+    # Enable for beta testers
+    - query: beta_tester eq true
+      variation: enabled
+
+# Example: Database migration mode
+database-migration-mode:
+  description: "Enable read-only mode during database migration"
+  variations:
+    enabled: true
+    disabled: false
+  defaultRule:
+    variation: disabled
+
+# Example: Feature with string variations
+api-version:
+  description: "API version to use for external service calls"
+  variations:
+    v1: "v1"
+    v2: "v2"
+    v3: "v3"
+  defaultRule:
+    variation: v1
+  targeting:
+    # Use v2 for specific clients
+    - query: client_id eq "premium-client"
+      variation: v2
+    # Gradual rollout to v3
+    - query: ""
+      percentage:
+        v1: 70
+        v2: 20
+        v3: 10
+
+# Example: Feature with number variations
+max-concurrent-requests:
+  description: "Maximum number of concurrent requests allowed"
+  variations:
+    low: 10
+    medium: 50
+    high: 100
+  defaultRule:
+    variation: medium
+  targeting:
+    # Higher limit for premium users
+    - query: subscription eq "premium"
+      variation: high
+    # Lower limit for free users
+    - query: subscription eq "free"
+      variation: low
+
+# Example: Feature with JSON object variations
+cache-config:
+  description: "Cache configuration settings"
+  variations:
+    aggressive:
+      ttl: 3600
+      max_size: 10000
+      eviction_policy: "lru"
+    moderate:
+      ttl: 1800
+      max_size: 5000
+      eviction_policy: "lru"
+    conservative:
+      ttl: 300
+      max_size: 1000
+      eviction_policy: "fifo"
+  defaultRule:
+    variation: moderate
+
+# Example: A/B Testing scenario
+checkout-flow:
+  description: "Different checkout flow variations for A/B testing"
+  variations:
+    control: "original"
+    variant_a: "simplified"
+    variant_b: "express"
+  defaultRule:
+    variation: control
+  targeting:
+    - query: ""
+      percentage:
+        control: 34
+        variant_a: 33
+        variant_b: 33
+
+# Example: Maintenance mode
+maintenance-mode:
+  description: "Enable maintenance mode to show maintenance page"
+  variations:
+    enabled: true
+    disabled: false
+  defaultRule:
+    variation: disabled
+  # Can be quickly enabled by changing defaultRule to 'enabled'
+
+# Example: Feature with scheduled rollout
+new-dashboard:
+  description: "New dashboard UI"
+  variations:
+    enabled: true
+    disabled: false
+  defaultRule:
+    variation: disabled
+  targeting:
+    # Enable for internal users first
+    - query: email endsWith "@company.com"
+      variation: enabled
+    # Then gradual rollout to everyone
+    - query: ""
+      percentage:
+        enabled: 25
+        disabled: 75

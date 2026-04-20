@@ -1,0 +1,38 @@
+stages:
+  - publish
+
+variables:
+  # Gunakan CI_API_V4_URL untuk pointing ke GitLab instance ini (git.bluebird.id)
+  NUGET_SOURCE: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/nuget/index.json"
+
+publish-common:
+  stage: publish
+  image: mcr.microsoft.com/dotnet/sdk:10.0
+  only:
+    changes:
+      - src/SkeletonApi.Common/**/*
+  script:
+    - |
+      echo "🚀 Preparing to publish SkeletonApi.Common to GitLab Registry..."
+
+      # 1. Tambahkan GitLab Package Source
+      dotnet nuget add source "${NUGET_SOURCE}" \
+        --name gitlab \
+        --username gitlab-ci-token \
+        --password "${CI_JOB_TOKEN}" \
+        --store-password-in-clear-text
+
+      # 2. Pack
+      dotnet pack -c Release -o ./nupkg src/SkeletonApi.Common/SkeletonApi.Common.csproj
+
+      # 3. Publish
+      PACKAGE_PATH=$(find ./nupkg -name "SkeletonApi.Common.*.nupkg" | head -n 1)
+      
+      echo "📦 Found package: ${PACKAGE_PATH}"
+
+      dotnet nuget push "${PACKAGE_PATH}" \
+        --source gitlab \
+        --api-key "${CI_JOB_TOKEN}" \
+        --skip-duplicate
+
+      echo "✅ Package published successfully!"

@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package proto;
+
+option csharp_namespace = "ProductService.Protos";
+
+option go_package = "skeleton-api-go/proto";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+
+message Product {
+	int32 item = 1 [json_name="item"];
+	google.protobuf.StringValue id = 2 [json_name="id"];
+	google.protobuf.StringValue name = 3 [json_name="name"];
+	google.protobuf.StringValue description = 4 [json_name="description"];
+	google.protobuf.DoubleValue price = 5 [json_name="price"];
+	google.protobuf.Int32Value stock = 6 [json_name="stock"];
+	google.protobuf.StringValue category = 7 [json_name="category"];
+	google.protobuf.BoolValue is_active = 8 [json_name="is_active"];
+	google.protobuf.Timestamp created_at = 9 [json_name="created_at"];
+	google.protobuf.Timestamp updated_at = 10 [json_name="updated_at"];
+	google.protobuf.StringValue discount = 11 [json_name="discount"];
+	google.protobuf.StringValue image = 12 [json_name="image"];
+}
+
+message ResProductAll {
+	repeated Product list_product = 1;
+}
+
+message ProductEmpty {
+}
+
+message ResProductMessage {
+	string message = 1;
+}
+
+message ProductSearchRequest {
+	google.protobuf.StringValue query = 1 [json_name="query"];
+}
+
+message ProductByIdRequest {
+	string id = 1 [json_name="id"];
+}
+
+message PaginationRequest {
+	int32 page = 1 [json_name="page"];
+	int32 page_size = 2 [json_name="page_size"];
+}
+
+message PaginationMeta {
+	int32 page = 1 [json_name="page"];
+	int32 page_size = 2 [json_name="page_size"];
+	int64 total_items = 3 [json_name="total_items"];
+	int32 total_pages = 4 [json_name="total_pages"];
+}
+
+message ResProductPaginated {
+	repeated Product items = 1 [json_name="items"];
+	PaginationMeta pagination = 2 [json_name="pagination"];
+}
+
+service ProductGrpcService {
+	rpc Add(Product) returns (ResProductMessage){
+		option(google.api.http) = {
+			post: "/v1/product",
+			body:"*"
+		};
+	}
+
+	rpc GetAll(ProductEmpty) returns (ResProductAll){
+		option(google.api.http) = {
+			get: "/v1/product"
+		};
+	}
+
+	rpc GetById(ProductByIdRequest) returns (Product){
+		option(google.api.http) = {
+			get: "/v1/product/{id}"
+		};
+	}
+
+	rpc Update(Product) returns (ResProductMessage){
+		option(google.api.http) = {
+			put: "/v1/product/{id}",
+			body:"*"
+		};
+	}
+
+	rpc Delete(ProductByIdRequest) returns (ResProductMessage){
+		option(google.api.http) = {
+			delete: "/v1/product/{id}"
+		};
+	}
+
+	rpc Search(ProductSearchRequest) returns (ResProductAll){
+		option(google.api.http) = {
+			post: "/v1/product/search",
+			body:"*"
+		};
+	}
+
+	rpc GetAllPaginated(PaginationRequest) returns (ResProductPaginated){
+		option(google.api.http) = {
+			get: "/v1/products/paginated"
+		};
+	}
+}

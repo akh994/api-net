@@ -1,0 +1,24 @@
+<Project>
+  <PropertyGroup>
+    <!-- Suppress the error: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported. -->
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+    
+    <!-- Alternatively, if the above doesn't work, this prevents the SDK from checking VS version compatibility -->
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
+    
+    <!-- Suppress the unnecessary package pruning warning for transitives overridden below -->
+    <NoWarn>$(NoWarn);NU1510</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Explicitly upgrade vulnerable transitive dependencies pulled in by older packages like Elastic.Apm -->
+    <!-- GHSA-7jgj-8wvc-jh57 -->
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <!-- GHSA-6xh7-4v2w-36q6, GHSA-ch6p-4jcm-h8vh, GHSA-j8f4-2w4p-mhjc, GHSA-qhqf-ghgh-x2m4 -->
+    <PackageReference Include="System.Net.Security" Version="4.3.2" />
+    <!-- GHSA-7mfr-774f-w5r9 -->
+    <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
+    <!-- GHSA-cmhx-cq75-c4mj -->
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+  </ItemGroup>
+</Project>

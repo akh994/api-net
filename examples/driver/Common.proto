@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+option csharp_namespace = "DriverPlanning.Protos";
+
+package Common;
+
+message SearchRequest {
+  optional string query = 1;
+  int32 page = 2; // Which page number do we want?
+  int32 page_size = 3; // Number of results to return per page.
+}
+
+message GeneralResponse {
+  string status = 1;
+  GeneralMessageResponse message = 2;
+}
+
+message GeneralMessageResponse {
+  int32 code = 1;
+  string message = 2;
+}
+
+message Metadata {
+  int32 page = 1 [json_name="page"];
+  int32 page_size = 2 [json_name="page_size"];
+  int32 total_items = 3 [json_name="total_items"];
+  double total_pages = 4 [json_name="total_pages"];
+}
+
+message EntityIdRequest {
+    int32 id = 1;
+}
+
+message SuccessResponse {
+    bool result = 1;
+}
+
+message CreateResponse {
+    int32 id = 1;
+}
+
+message reqGuid {
+	string id = 1 [json_name="id"];
+}
+
+message resMessage {
+    string message = 1;
+}
+
+message ResGeneral {
+    bool success = 1;
+    ResDataGeneral data = 2;
+}
+
+message ResDataGeneral {
+    string message = 1;
+}
+
+enum IsStatus{
+    Nonaktif = 0;    
+    Aktif = 1;
+}

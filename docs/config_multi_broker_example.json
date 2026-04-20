@@ -1,0 +1,131 @@
+{
+  "message_publishers": {
+    "topic_a": {
+      "name": "topic-A",
+      "type": "rabbitmq"
+    },
+    "topic_c": {
+      "name": "topic-C",
+      "type": "rabbitmq",
+      "mq_config": {
+        "host": "rabbitmq-host-2",
+        "port": 5672,
+        "username": "user2",
+        "password": "password2",
+        "queue_type": "quorum"
+      }
+    },
+    "topic_d": {
+      "name": "topic-D",
+      "type": "pubsub"
+    },
+    "general_mq_config": {
+      "rabbitmq": {
+        "host": "localhost",
+        "port": 5672,
+        "username": "guest",
+        "password": "guest",
+        "message_ttl": 2,
+        "queue_expiration": 3,
+        "enable_dlq": true,
+        "max_retries": 5,
+        "queue_type": "classic",
+        "concurrent_consumers": 5
+      },
+      "kafka": {
+        "brokers": [
+          "localhost:9092"
+        ],
+        "username": "",
+        "password": "",
+        "client_id": "skeleton-api-go-publisher",
+        "compression": "snappy",
+        "max_retries": 5,
+        "acks": "all",
+        "compression_level": 0,
+        "max_message_bytes": 1048576
+      },
+      "pubsub": {
+        "credentials": "credentials/service-account.json",
+        "project_id": "your-project-id",
+        "max_retries": 5,
+        "timeout_seconds": 10
+      },
+      "mqtt": {
+        "broker": "tcp://localhost:1883",
+        "client_id": "skeleton-api-go-publisher",
+        "username": "",
+        "password": "",
+        "keep_alive_seconds": 60,
+        "qos": 1,
+        "retained": false,
+        "max_retries": 5
+      }
+    }
+  },
+  "message_consumers": {
+    "subscription": "subscription-B",
+    "topics": {
+      "topic_a": {
+        "name": "topic-A",
+        "type": "rabbitmq"
+      },
+      "topic_c": {
+        "name": "topic-C",
+        "type": "rabbitmq",
+        "mq_config": {
+          "host": "rabbitmq-host-2",
+          "port": 5672,
+          "username": "user2",
+          "password": "password2",
+          "queue_type": "quorum"
+        }
+      },
+      "topic_d": {
+        "name": "topic-D",
+        "type": "pubsub"
+      }
+    },
+    "general_mq_config": {
+      "rabbitmq": {
+        "host": "localhost",
+        "port": 5672,
+        "username": "guest",
+        "password": "guest",
+        "message_ttl": 2,
+        "queue_expiration": 3,
+        "enable_dlq": true,
+        "max_retries": 5,
+        "queue_type": "classic",
+        "concurrent_consumers": 5
+      },
+      "kafka": {
+        "brokers": [
+          "localhost:9092"
+        ],
+        "username": "",
+        "password": "",
+        "group_id": "skeleton-api-go-consumer-group",
+        "auto_offset_reset": "latest",
+        "concurrent_consumers": 3
+      },
+      "pubsub": {
+        "credentials": "credentials/service-account.json",
+        "project_id": "your-project-id",
+        "create_subscription": true,
+        "concurrent_consumers": 5,
+        "ack_deadline_seconds": 10
+      },
+      "mqtt": {
+        "broker": "tcp://localhost:1883",
+        "client_id": "skeleton-api-go-consumer",
+        "username": "",
+        "password": "",
+        "clean_session": true,
+        "keep_alive_seconds": 60,
+        "qos": 1,
+        "concurrent_consumers": 5
+      }
+    }
+  }
+}

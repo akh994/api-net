@@ -1,0 +1,43 @@
+@startuml Add User Flow - Simplified (.NET)
+!theme plain
+title Add User Flow - Simplified View (.NET 10)
+
+actor Client
+participant "UserGrpcService\n(Presentation)" as grpc
+participant "UserService\n(Application)" as service
+participant "UserRepository\n(Dapper)" as repository
+participant "CacheRepository\n(Redis)" as cache
+participant "UserMessagePublisher\n(RabbitMQ)" as publisher
+database MySQL
+database Redis
+queue RabbitMQ
+
+Client -> grpc: Add(UserModel)
+grpc -> service: CreateAsync(user)
+
+service -> service: FluentValidation.ValidateAsync()
+
+service -> repository: CreateAsync(user)
+repository -> MySQL: INSERT INTO users\n(using Dapper)
+MySQL --> repository: OK
+repository --> service: void
+
+service -> cache: SetAsync(user)
+cache -> Redis: SET user:{id}
+Redis --> cache: OK
+cache --> service: void
+
+service -> publisher: PublishUserCreatedAsync(user)
+note right
+  Headers:
+  - traceparent (W3C Trace Context)
+  - Activity.Current
+end note
+publisher -> RabbitMQ: Publish to "user.created"
+RabbitMQ --> publisher: ACK
+publisher --> service: void
+
+service --> grpc: User
+grpc --> Client: ResUserMessage
+
+@enduml

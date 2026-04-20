@@ -1,0 +1,210 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "CityRide Taxi API",
+    "description": "API komprehensif untuk layanan pemesanan taksi, estimasi tarif, dan pelacakan perjalanan.",
+    "version": "2.0.0"
+  },
+  "servers": [
+    {
+      "url": "api.cityride.com",
+      "description": "Production server"
+    }
+  ],
+  "paths": {
+    "/estimates/price": {
+      "get": {
+        "summary": "Mendapatkan estimasi biaya",
+        "description": "Menghitung perkiraan harga berdasarkan titik jemput dan tujuan.",
+        "parameters": [
+          {
+            "name": "start_lat",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "start_long",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "end_lat",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "end_long",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "number" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar estimasi harga per jenis kendaraan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PriceEstimate"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bookings": {
+      "post": {
+        "summary": "Membuat pesanan taksi baru",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Pesanan berhasil dibuat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Riwayat pesanan pengguna",
+        "responses": {
+          "200": {
+            "description": "Daftar riwayat perjalanan"
+          }
+        }
+      }
+    },
+    "/bookings/{bookingId}": {
+      "get": {
+        "summary": "Cek status perjalanan real-time",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail perjalanan termasuk lokasi driver"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update pesanan (misal ganti tujuan atau batalkan)",
+        "description": "Digunakan untuk pembatalan oleh pengguna.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": ["CANCELLED"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Update berhasil" }
+        }
+      }
+    },
+    "/drivers/{driverId}/location": {
+      "get": {
+        "summary": "Dapatkan lokasi terkini driver",
+        "parameters": [
+          {
+            "name": "driverId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Koordinat GPS driver"
+          }
+        }
+      }
+    },
+    "/bookings/{bookingId}/reviews": {
+      "post": {
+        "summary": "Memberikan rating kepada driver",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rating": { "type": "integer", "minimum": 1, "maximum": 5 },
+                  "comment": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Review berhasil ditambahkan" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PriceEstimate": {
+        "type": "object",
+        "properties": {
+          "vehicle_type": { "type": "string", "example": "SUV" },
+          "estimated_fare": { "type": "number", "example": 55000.00 },
+          "currency": { "type": "string", "example": "IDR" },
+          "distance_km": { "type": "number", "example": 12.5 }
+        }
+      },
+      "BookingRequest": {
+        "type": "object",
+        "required": ["pickup_address", "destination_address", "vehicle_type"],
+        "properties": {
+          "pickup_address": { "type": "string" },
+          "destination_address": { "type": "string" },
+          "vehicle_type": { "type": "string" },
+          "payment_method": { "type": "string", "enum": ["CASH", "WALLET", "CARD"] }
+        }
+      },
+      "BookingDetail": {
+        "type": "object",
+        "properties": {
+          "booking_id": { "type": "string" },
+          "status": { "type": "string", "enum": ["SEARCHING", "ALLOCATED", "PICKUP", "ON_BOARD", "COMPLETED", "CANCELLED"] },
+          "driver_name": { "type": "string" },
+          "vehicle_plate": { "type": "string" },
+          "estimated_arrival_mins": { "type": "integer" }
+        }
+      }
+    }
+  }
+}

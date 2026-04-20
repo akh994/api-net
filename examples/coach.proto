@@ -1,0 +1,16 @@
+syntax = "proto3";
+package coach;
+option csharp_namespace = "AthleteManagement.Protos";
+
+service CoachService {
+  rpc GetCoach(GetCoachRequest) returns (CoachResponse);
+}
+
+message GetCoachRequest {
+  string id = 1;
+}
+
+message CoachResponse {
+  string id = 1;
+  string name = 2;
+}

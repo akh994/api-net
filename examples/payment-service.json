@@ -1,0 +1,42 @@
+{
+    "service_name": "PaymentService",
+    "base_url_config_key": "external_services.payment.base_url",
+    "methods": [
+        {
+            "name": "CreatePayment",
+            "http_method": "POST",
+            "path": "/v1/payments",
+            "request": {
+                "amount": "int64",
+                "currency": "string",
+                "user_id": "string"
+            },
+            "response": {
+                "payment_id": "string",
+                "status": "string",
+                "created_at": "time.Time"
+            }
+        },
+        {
+            "name": "GetPayment",
+            "http_method": "GET",
+            "path": "/v1/payments/{id}",
+            "response": {
+                "payment_id": "string",
+                "amount": "int64",
+                "currency": "string",
+                "status": "string",
+                "created_at": "time.Time"
+            }
+        },
+        {
+            "name": "CancelPayment",
+            "http_method": "DELETE",
+            "path": "/v1/payments/{id}",
+            "response": {
+                "success": "bool",
+                "message": "string"
+            }
+        }
+    ]
+}

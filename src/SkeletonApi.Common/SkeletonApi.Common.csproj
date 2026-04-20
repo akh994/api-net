@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageId>SkeletonApi.Common</PackageId>
+    <Version>1.0.22</Version>
+    <Authors>SkeletonApi</Authors>
+    <Company>SkeletonApi</Company>
+    <Description>Common utilities and shared logic for Skeleton API projects.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Confluent.Kafka" Version="2.12.0" />
+    <PackageReference Include="Google.Cloud.PubSub.V1" Version="3.30.0" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.59.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Google.Protobuf" Version="3.31.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.3" />
+    <PackageReference Include="MQTTnet" Version="5.1.0.1559" />
+    <PackageReference Include="OpenFeature" Version="2.0.0" />
+    <PackageReference Include="OpenFeature.Contrib.Providers.Flipt" Version="0.0.5" />
+    <!-- <PackageReference Include="OpenFeature.Contrib.Providers.GOFeatureFlag" Version="0.0.5" /> -->
+    <PackageReference Include="Elastic.Apm.NetCoreAll" Version="1.34.1" />
+    <PackageReference Include="Elastic.Apm.SerilogEnricher" Version="1.5.3" />
+    <PackageReference Include="Elastic.Apm.StackExchange.Redis" Version="1.34.1" />
+    <PackageReference Include="FluentValidation" Version="11.8.0" />
+    <PackageReference Include="Polly" Version="8.2.0" />
+    <PackageReference Include="prometheus-net" Version="8.2.1" />
+    <PackageReference Include="RabbitMQ.Client" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SkeletonApi.Contracts\SkeletonApi.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>
+ 
+ 
